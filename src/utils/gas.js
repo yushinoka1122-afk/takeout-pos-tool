@@ -27,6 +27,8 @@ export async function sendSalesDataToGAS(orderData) {
 }
 
 
+import Papa from 'papaparse';
+
 export async function fetchProductsFromCSV() {
   const CSV_URL = localStorage.getItem('pos_csv_url') || '';
 
@@ -46,45 +48,53 @@ export async function fetchProductsFromCSV() {
       throw new Error('Network response was not ok');
     }
     
-    // ArrayBufferとして取得してXLSXライブラリでパース（カンマ等のエッジケース対応）
-    const arrayBuffer = await response.arrayBuffer();
-    const wb = XLSX.read(arrayBuffer, { type: 'array' });
-    const sheetName = wb.SheetNames[0];
-    const sheet = wb.Sheets[sheetName];
-    const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    // 文字化けを防ぐため、テキストとして取得
+    const csvText = await response.text();
     
-    const items = [];
-    let currentCategory = 'その他';
-    
-    // 1行目はヘッダーなのでスキップ
-    for (let i = 1; i < data.length; i++) {
-      const row = data[i];
-      if (!row || row.length < 2) continue;
-      
-      const rawCategory = row[0]; // A列：ジャンル
-      const name = row[1];        // B列：商品名
-      const rawPrice = row[2];    // C列：価格
-      
-      if (rawCategory !== undefined && rawCategory !== null && String(rawCategory).trim() !== "") {
-        currentCategory = String(rawCategory).trim();
-      }
-      
-      if (!name) continue;
-      
-      const priceStr = String(rawPrice || 0).replace(/[^0-9]/g, '');
-      const price = parseInt(priceStr, 10);
-      
-      if (!isNaN(price)) {
-        items.push({
-          id: 'csv_' + i,
-          name: String(name),
-          price: price,
-          category: currentCategory
-        });
-      }
-    }
-    
-    return items;
+    // PapaParseで安全にCSVを解析
+    return new Promise((resolve) => {
+      Papa.parse(csvText, {
+        complete: (results) => {
+          const data = results.data;
+          const items = [];
+          let currentCategory = 'その他';
+          
+          // 1行目はヘッダーなのでスキップ
+          for (let i = 1; i < data.length; i++) {
+            const row = data[i];
+            if (!row || row.length < 2) continue;
+            
+            const rawCategory = row[0]; // A列：ジャンル
+            const name = row[1];        // B列：商品名
+            const rawPrice = row[2];    // C列：価格
+            
+            if (rawCategory !== undefined && rawCategory !== null && String(rawCategory).trim() !== "") {
+              currentCategory = String(rawCategory).trim();
+            }
+            
+            if (!name) continue;
+            
+            const priceStr = String(rawPrice || 0).replace(/[^0-9]/g, '');
+            const price = parseInt(priceStr, 10);
+            
+            if (!isNaN(price)) {
+              items.push({
+                id: 'csv_' + i,
+                name: String(name),
+                price: price,
+                category: currentCategory
+              });
+            }
+          }
+          
+          resolve(items);
+        },
+        error: (error) => {
+          console.error('CSVパースエラー:', error);
+          resolve(null);
+        }
+      });
+    });
   } catch (error) {
     console.error('CSVからのメニュー取得エラー:', error);
     return null;
