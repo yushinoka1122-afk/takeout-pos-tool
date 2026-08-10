@@ -39,10 +39,10 @@ export default function ProductGrid({ products, onAddToCart }) {
               <span>No Image</span>
             </div>
             <div className="product-info">
+              <div className="product-category">{product.category}</div>
               <div className="product-name">{product.name}</div>
-              <div className="product-price">¥{product.price.toLocaleString()}</div>
+              <div className="product-price">¥{(product.price || 0).toLocaleString()}</div>
             </div>
-          </div>
         ))}
       </div>
     </div>

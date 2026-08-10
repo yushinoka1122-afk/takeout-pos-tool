@@ -19,7 +19,7 @@ export default function Cart({ cartItems, onUpdateQuantity, onCheckout }) {
             <div key={item.id} className="cart-item">
               <div className="cart-item-info">
                 <div className="cart-item-name">{item.name}</div>
-                <div className="cart-item-price">¥{item.price.toLocaleString()}</div>
+                <div className="cart-item-price">¥{(item.price || 0).toLocaleString()}</div>
               </div>
               <div className="cart-item-controls">
                 <button 

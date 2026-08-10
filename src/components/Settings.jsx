@@ -245,7 +245,7 @@ export default function Settings({ onSave, onBack }) {
                       <td>{item.id}</td>
                       <td>{item.category}</td>
                       <td>{item.name}</td>
-                      <td>¥{item.price.toLocaleString()}</td>
+                      <td>¥{(item.price || 0).toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
