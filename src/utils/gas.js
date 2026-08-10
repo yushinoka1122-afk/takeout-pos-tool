@@ -24,3 +24,24 @@ export async function sendSalesDataToGAS(orderData) {
     return false;
   }
 }
+
+export async function fetchMenuDataFromGAS() {
+  const GAS_WEBAPP_URL = localStorage.getItem('pos_gas_url') || '';
+
+  if (!GAS_WEBAPP_URL || !GAS_WEBAPP_URL.startsWith('http')) {
+    return null;
+  }
+
+  try {
+    // GETリクエストでメニューデータを取得 (GASはリダイレクトでCORSヘッダを付与する)
+    const response = await fetch(GAS_WEBAPP_URL);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('GASからのメニュー取得エラー:', error);
+    return null;
+  }
+}

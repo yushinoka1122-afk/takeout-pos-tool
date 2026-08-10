@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { Upload, CheckCircle } from 'lucide-react';
+import { fetchMenuDataFromGAS } from '../utils/gas';
 
 export default function Settings({ onSave, onBack }) {
   const [dataPreview, setDataPreview] = useState([]);
@@ -175,17 +176,33 @@ export default function Settings({ onSave, onBack }) {
         </p>
 
         <div style={{marginBottom: '30px', textAlign: 'left', background: 'var(--bg)', padding: '16px', borderRadius: '8px'}}>
-          <h3 style={{marginBottom: '8px', fontSize: '1.1rem'}}>連携スプレッドシートの設定</h3>
+          <h3 style={{marginBottom: '8px', fontSize: '1.1rem'}}>クラウド連携（スプレッドシート）</h3>
           <p style={{fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '12px'}}>
-            Google Apps Scriptで発行した「ウェブアプリのURL」を貼り付けてください。
+            Google Apps ScriptのURLを設定すると、起動時に自動で「商品マスター」からメニューを読み込みます。
           </p>
-          <input 
-            type="text" 
-            placeholder="https://script.google.com/macros/s/.../exec"
-            value={gasUrl}
-            onChange={handleGasUrlChange}
-            style={{width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '1rem'}}
-          />
+          <div style={{display: 'flex', gap: '8px'}}>
+            <input 
+              type="text" 
+              placeholder="https://script.google.com/macros/s/.../exec"
+              value={gasUrl}
+              onChange={handleGasUrlChange}
+              style={{flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '1rem'}}
+            />
+            <button 
+              className="btn btn-primary"
+              onClick={async () => {
+                if (!gasUrl) return alert('URLを入力してください');
+                const data = await fetchMenuDataFromGAS();
+                if (data && data.length > 0) {
+                  saveAndProceed(data);
+                } else {
+                  alert('データの取得に失敗しました。URLや「商品マスター」シートの内容を確認してください。');
+                }
+              }}
+            >
+              手動同期
+            </button>
+          </div>
         </div>
         
         <label className="file-drop-area">

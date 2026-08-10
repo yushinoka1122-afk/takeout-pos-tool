@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Settings from './components/Settings';
 import ProductGrid from './components/ProductGrid';
 import Cart from './components/Cart';
-import { sendSalesDataToGAS } from './utils/gas';
+import { sendSalesDataToGAS, fetchMenuDataFromGAS } from './utils/gas';
 import CheckoutModal from './components/CheckoutModal';
 import { Settings as SettingsIcon } from 'lucide-react';
 
@@ -14,18 +14,31 @@ function App() {
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
 
   useEffect(() => {
-    // ローカルストレージから商品データを読み込む
+    // ローカルストレージから一時的に読み込む（オフライン時や高速表示のため）
     const savedProducts = localStorage.getItem('pos_products');
+    let hasLocalData = false;
     if (savedProducts) {
       try {
         setProducts(JSON.parse(savedProducts));
+        hasLocalData = true;
       } catch (e) {
         console.error('商品のパースに失敗しました', e);
       }
-    } else {
-      // データがない場合は設定画面を強制表示
-      setIsSettingsOpen(true);
     }
+
+    // クラウド（スプレッドシート）から最新メニューを自動同期する
+    const syncMenu = async () => {
+      const gasData = await fetchMenuDataFromGAS();
+      if (gasData && gasData.length > 0) {
+        setProducts(gasData);
+        localStorage.setItem('pos_products', JSON.stringify(gasData));
+      } else if (!hasLocalData) {
+        // データがどこにも無い場合は設定画面を開く
+        setIsSettingsOpen(true);
+      }
+    };
+    
+    syncMenu();
   }, []);
 
   const handleAddToCart = (product) => {
