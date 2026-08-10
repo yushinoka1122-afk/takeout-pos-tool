@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Settings from './components/Settings';
 import ProductGrid from './components/ProductGrid';
 import Cart from './components/Cart';
-import { sendSalesDataToGAS, fetchMenuDataFromGAS } from './utils/gas';
+import { sendSalesDataToGAS, fetchProductsFromCSV } from './utils/gas';
 import CheckoutModal from './components/CheckoutModal';
 import { Settings as SettingsIcon } from 'lucide-react';
 
@@ -26,12 +26,12 @@ function App() {
       }
     }
 
-    // クラウド（スプレッドシート）から最新メニューを自動同期する
+    // クラウド（スプレッドシートCSV）から最新メニューを自動同期する
     const syncMenu = async () => {
-      const gasData = await fetchMenuDataFromGAS();
-      if (gasData && gasData.length > 0) {
-        setProducts(gasData);
-        localStorage.setItem('pos_products', JSON.stringify(gasData));
+      const csvData = await fetchProductsFromCSV();
+      if (csvData && csvData.length > 0) {
+        setProducts(csvData);
+        localStorage.setItem('pos_products', JSON.stringify(csvData));
       } else if (!hasLocalData) {
         // データがどこにも無い場合は設定画面を開く
         setIsSettingsOpen(true);

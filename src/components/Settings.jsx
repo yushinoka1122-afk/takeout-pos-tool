@@ -2,17 +2,24 @@ import { useState } from 'react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { Upload, CheckCircle } from 'lucide-react';
-import { fetchMenuDataFromGAS } from '../utils/gas';
+import { fetchProductsFromCSV } from '../utils/gas';
 
 export default function Settings({ onSave, onBack }) {
   const [dataPreview, setDataPreview] = useState([]);
   const [isSuccess, setIsSuccess] = useState(false);
   const [gasUrl, setGasUrl] = useState(localStorage.getItem('pos_gas_url') || '');
+  const [csvUrl, setCsvUrl] = useState(localStorage.getItem('pos_csv_url') || '');
 
   const handleGasUrlChange = (e) => {
     const val = e.target.value;
     setGasUrl(val);
     localStorage.setItem('pos_gas_url', val);
+  };
+  
+  const handleCsvUrlChange = (e) => {
+    const val = e.target.value;
+    setCsvUrl(val);
+    localStorage.setItem('pos_csv_url', val);
   };
 
   const saveAndProceed = (formatted) => {
@@ -177,31 +184,49 @@ export default function Settings({ onSave, onBack }) {
 
         <div style={{marginBottom: '30px', textAlign: 'left', background: 'var(--bg)', padding: '16px', borderRadius: '8px'}}>
           <h3 style={{marginBottom: '8px', fontSize: '1.1rem'}}>クラウド連携（スプレッドシート）</h3>
-          <p style={{fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '12px'}}>
-            Google Apps ScriptのURLを設定すると、起動時に自動で「商品マスター」からメニューを読み込みます。
-          </p>
-          <div style={{display: 'flex', gap: '8px'}}>
+          
+          <div style={{marginBottom: '16px'}}>
+            <label style={{display: 'block', fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '8px'}}>① 商品リストのURL（ウェブ公開CSV）</label>
+            <p style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '8px'}}>
+              商品の読み込みに使います。スプレッドシートの共有リンクをそのまま貼り付けてください。
+            </p>
+            <div style={{display: 'flex', gap: '8px'}}>
+              <input 
+                type="text" 
+                placeholder="https://docs.google.com/spreadsheets/d/.../edit?usp=sharing"
+                value={csvUrl}
+                onChange={handleCsvUrlChange}
+                style={{flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '1rem'}}
+              />
+              <button 
+                className="btn btn-primary"
+                onClick={async () => {
+                  if (!csvUrl) return alert('商品リストのURLを入力してください');
+                  const data = await fetchProductsFromCSV();
+                  if (data && data.length > 0) {
+                    saveAndProceed(data);
+                  } else {
+                    alert('データの取得に失敗しました。URLやシートの内容を確認してください。');
+                  }
+                }}
+              >
+                手動同期
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label style={{display: 'block', fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '8px'}}>② 売上データの送信先URL（GAS）</label>
+            <p style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '8px'}}>
+              売上の記録に使います。GAS（Google Apps Script）の「ウェブアプリのURL」を貼り付けてください。
+            </p>
             <input 
               type="text" 
               placeholder="https://script.google.com/macros/s/.../exec"
               value={gasUrl}
               onChange={handleGasUrlChange}
-              style={{flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '1rem'}}
+              style={{width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '1rem'}}
             />
-            <button 
-              className="btn btn-primary"
-              onClick={async () => {
-                if (!gasUrl) return alert('URLを入力してください');
-                const data = await fetchMenuDataFromGAS();
-                if (data && data.length > 0) {
-                  saveAndProceed(data);
-                } else {
-                  alert('データの取得に失敗しました。URLや「商品マスター」シートの内容を確認してください。');
-                }
-              }}
-            >
-              手動同期
-            </button>
           </div>
         </div>
         
