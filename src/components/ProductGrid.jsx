@@ -43,6 +43,7 @@ export default function ProductGrid({ products, onAddToCart }) {
               <div className="product-name">{product.name}</div>
               <div className="product-price">¥{(product.price || 0).toLocaleString()}</div>
             </div>
+          </div>
         ))}
       </div>
     </div>
