@@ -43,7 +43,11 @@ export async function fetchProductsFromCSV() {
       fetchUrl = CSV_URL.split('/edit')[0] + '/export?format=csv';
     }
 
-    const response = await fetch(fetchUrl);
+    // 古いデータを読み込まないようにキャッシュ無効化のタイムスタンプを付与
+    const separator = fetchUrl.includes('?') ? '&' : '?';
+    const noCacheUrl = `${fetchUrl}${separator}t=${new Date().getTime()}`;
+
+    const response = await fetch(noCacheUrl, { cache: 'no-store' });
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
