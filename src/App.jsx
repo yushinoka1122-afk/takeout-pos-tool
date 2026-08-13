@@ -69,9 +69,7 @@ function App() {
   };
 
   const handleCheckoutComplete = async ({ receivedAmount, change }) => {
-    setIsCheckoutModalOpen(false);
-    setIsCheckingOut(true);
-
+    // モーダルを閉じずに通信中状態を維持するため、ここでは閉じない
     const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
     const now = new Date();
@@ -87,13 +85,19 @@ function App() {
 
     const success = await sendSalesDataToGAS(orderData);
     
-    setIsCheckingOut(false);
-    if (success) {
-      // カートをクリア
-      setCartItems([]);
-      alert(`会計完了！\nおつり: ¥${change.toLocaleString()}`);
-    } else {
+    if (!success) {
       alert('通信エラーが発生しました。設定を確認してください。');
+      return false; // モーダル側に失敗を伝える
+    }
+    
+    // モーダル側に成功を伝える（カートのクリアはモーダルが閉じられた時に行う）
+    return true;
+  };
+
+  const handleCloseModal = (didComplete) => {
+    setIsCheckoutModalOpen(false);
+    if (didComplete) {
+      setCartItems([]);
     }
   };
 
@@ -145,8 +149,9 @@ function App() {
       
       {isCheckoutModalOpen && (
         <CheckoutModal 
+          cartItems={cartItems}
           totalAmount={cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)}
-          onClose={() => setIsCheckoutModalOpen(false)}
+          onClose={handleCloseModal}
           onComplete={handleCheckoutComplete}
         />
       )}
