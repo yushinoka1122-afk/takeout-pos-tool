@@ -69,20 +69,33 @@ export function printReceipt(cartItems, totalAmount, receivedAmount, change) {
             またのお越しをお待ちしております。
           </div>
         </div>
-        ${isPC ? '<script>window.onload = function() { window.print(); window.setTimeout(function(){ window.close(); }, 500); }</script>' : ''}
       </body>
     </html>
   `;
 
   if (isPC) {
-    // PCの場合は新しいウィンドウを開いて標準の印刷ダイアログを呼び出す
-    const printWindow = window.open('', '_blank', 'width=400,height=600');
-    if (printWindow) {
-      printWindow.document.write(html);
-      printWindow.document.close();
-    } else {
-      alert('ポップアップがブロックされました。ブラウザの設定を確認してください。');
+    // PCの場合は隠しiframeを作って印刷（ポップアップブロック対策）
+    let printIframe = document.getElementById('print-iframe');
+    if (!printIframe) {
+      printIframe = document.createElement('iframe');
+      printIframe.id = 'print-iframe';
+      printIframe.style.position = 'absolute';
+      printIframe.style.width = '0px';
+      printIframe.style.height = '0px';
+      printIframe.style.border = 'none';
+      document.body.appendChild(printIframe);
     }
+    
+    const iframeDoc = printIframe.contentWindow.document;
+    iframeDoc.open();
+    iframeDoc.write(html);
+    iframeDoc.close();
+    
+    // 確実にレンダリングさせるため少し待ってから印刷ダイアログを呼び出す
+    setTimeout(() => {
+      printIframe.contentWindow.focus();
+      printIframe.contentWindow.print();
+    }, 250);
   } else {
     // iPadの場合はPassPRNTを呼び出す
     const currentUrl = window.location.href.split('?')[0]; // クエリパラメータを除外
