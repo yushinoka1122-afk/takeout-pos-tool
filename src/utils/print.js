@@ -36,6 +36,7 @@ export function printReceipt(cartItems, totalAmount, receivedAmount, change) {
       <body>
         <div class="receipt">
           <div class="header">
+            <img src="https://yushinoka1122-afk.github.io/takeout-pos/logo.png" style="width: 100%; max-width: 200px; margin-bottom: 10px;" onerror="this.style.display='none'" />
             <div class="title" style="font-size: 20px;">BAKERY CAFE C<br>神戸さんちか店</div>
             <div style="margin-top: 5px;">${dateStr}</div>
           </div>
@@ -56,6 +57,14 @@ export function printReceipt(cartItems, totalAmount, receivedAmount, change) {
               <span>合計</span>
               <span>¥${totalAmount.toLocaleString()}</span>
             </div>
+            <div class="row" style="font-size: 12px; color: #555;">
+              <span>8%対象</span>
+              <span>¥${totalAmount.toLocaleString()}</span>
+            </div>
+            <div class="row" style="font-size: 12px; color: #555; margin-bottom: 10px;">
+              <span>内消費税等(8%)</span>
+              <span>¥${Math.round(totalAmount - (totalAmount / 1.08)).toLocaleString()}</span>
+            </div>
             <div class="row">
               <span>お預かり</span>
               <span>¥${receivedAmount.toLocaleString()}</span>
@@ -66,6 +75,7 @@ export function printReceipt(cartItems, totalAmount, receivedAmount, change) {
             </div>
           </div>
           <div class="footer">
+            登録番号：T1234567890123<br>
             またのお越しをお待ちしております。
           </div>
         </div>
@@ -99,8 +109,8 @@ export function printReceipt(cartItems, totalAmount, receivedAmount, change) {
   } else {
     // iPadの場合はPassPRNTを呼び出す
     const currentUrl = window.location.href.split('?')[0]; // クエリパラメータを除外
-    // size=2 (2inch/58mm), size=3 (3inch/80mm)
-    const passPrntUrl = `starpassprnt://v1/print/nopreview?html=${encodeURIComponent(html)}&size=2&back=${encodeURIComponent(currentUrl)}`;
+    // size=384 (2inch/58mm), size=576 (3inch/80mm) ※最新のAPI仕様に合わせてドット数で指定
+    const passPrntUrl = `starpassprnt://v1/print/nopreview?html=${encodeURIComponent(html)}&size=384&back=${encodeURIComponent(currentUrl)}`;
     window.location.href = passPrntUrl;
   }
 }
