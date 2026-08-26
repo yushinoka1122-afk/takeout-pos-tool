@@ -4,6 +4,7 @@ import ProductGrid from './components/ProductGrid';
 import Cart from './components/Cart';
 import { sendSalesDataToGAS, fetchProductsFromCSV } from './utils/gas';
 import CheckoutModal from './components/CheckoutModal';
+import DrinkSelectModal from './components/DrinkSelectModal';
 import { Settings as SettingsIcon } from 'lucide-react';
 
 function App() {
@@ -13,6 +14,9 @@ function App() {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [isReturnMode, setIsReturnMode] = useState(false);
+  
+  // ドリンク選択が必要な商品を一時保持するステート
+  const [productNeedingDrink, setProductNeedingDrink] = useState(null);
 
   useEffect(() => {
     // ローカルストレージから一時的に読み込む（オフライン時や高速表示のため）
@@ -43,6 +47,33 @@ function App() {
   }, []);
 
   const handleAddToCart = (product) => {
+    // もし商品名に「選べるドリンク」が含まれていたら、ドリンク選択モーダルを開く
+    if (product.name.includes('選べるドリンク')) {
+      setProductNeedingDrink(product);
+    } else {
+      finalizeAddToCart(product);
+    }
+  };
+
+  const handleDrinkSelected = (drink) => {
+    if (!productNeedingDrink) return;
+    
+    // カスタマイズされた商品を作成
+    const customizedProduct = {
+      ...productNeedingDrink,
+      // IDを一意にするためドリンク名を付与（例： csv_1_カフェラテ）
+      id: `${productNeedingDrink.id}_${drink.name}`,
+      // 商品名に選んだドリンクを追記
+      name: `${productNeedingDrink.name} (${drink.name})`,
+      // 追加料金を加算
+      price: productNeedingDrink.price + (drink.extraPrice || 0)
+    };
+    
+    finalizeAddToCart(customizedProduct);
+    setProductNeedingDrink(null); // モーダルを閉じる
+  };
+
+  const finalizeAddToCart = (product) => {
     const qtyChange = isReturnMode ? -1 : 1;
     
     setCartItems(prev => {
@@ -172,6 +203,14 @@ function App() {
           totalAmount={cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)}
           onClose={handleCloseModal}
           onComplete={handleCheckoutComplete}
+        />
+      )}
+
+      {productNeedingDrink && (
+        <DrinkSelectModal
+          product={productNeedingDrink}
+          onSelect={handleDrinkSelected}
+          onClose={() => setProductNeedingDrink(null)}
         />
       )}
 
