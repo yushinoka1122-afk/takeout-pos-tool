@@ -71,6 +71,7 @@ export async function fetchProductsFromCSV() {
             const rawCategory = row[0]; // A列：ジャンル
             const name = row[1];        // B列：商品名
             const rawPrice = row[2];    // C列：価格
+            const imageUrl = row[3];    // D列：画像URL
             
             if (rawCategory !== undefined && rawCategory !== null && String(rawCategory).trim() !== "") {
               currentCategory = String(rawCategory).trim();
@@ -86,7 +87,8 @@ export async function fetchProductsFromCSV() {
                 id: 'csv_' + i,
                 name: String(name),
                 price: price,
-                category: currentCategory
+                category: currentCategory,
+                image: imageUrl && String(imageUrl).trim() !== "" ? String(imageUrl).trim() : null
               });
             }
           }

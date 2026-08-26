@@ -35,8 +35,15 @@ export default function ProductGrid({ products, onAddToCart }) {
             onClick={() => onAddToCart(product)}
           >
             <div className="product-image">
-              {/* 将来的に product.image のURLを入れる想定。現在はプレースホルダー */}
-              <span>No Image</span>
+              {(() => {
+                const localImg = localStorage.getItem('pos_img_' + product.name);
+                const imgSrc = localImg || product.image;
+                if (imgSrc) {
+                  return <img src={imgSrc} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => {e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex';}} />
+                }
+                return null;
+              })()}
+              <span style={{ display: localStorage.getItem('pos_img_' + product.name) || product.image ? 'none' : 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>No Image</span>
             </div>
             <div className="product-info">
               <div className="product-category">{product.category}</div>

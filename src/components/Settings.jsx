@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { Upload, CheckCircle } from 'lucide-react';
@@ -9,6 +9,17 @@ export default function Settings({ onSave, onBack }) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [gasUrl, setGasUrl] = useState(localStorage.getItem('pos_gas_url') || '');
   const [csvUrl, setCsvUrl] = useState(localStorage.getItem('pos_csv_url') || '');
+  const [localProducts, setLocalProducts] = useState([]);
+  const [imageUpdates, setImageUpdates] = useState(0); // Trigger re-renders for images
+
+  useEffect(() => {
+    const saved = localStorage.getItem('pos_products');
+    if (saved) {
+      try {
+        setLocalProducts(JSON.parse(saved));
+      } catch (e) {}
+    }
+  }, []);
 
   const handleGasUrlChange = (e) => {
     const val = e.target.value;
@@ -26,9 +37,56 @@ export default function Settings({ onSave, onBack }) {
     setDataPreview(formatted);
     setIsSuccess(true);
     localStorage.setItem('pos_products', JSON.stringify(formatted));
+    setLocalProducts(formatted);
     setTimeout(() => {
       onSave(formatted);
     }, 1500);
+  };
+
+  const handleImageUpload = (productName, file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const max_size = 300;
+        
+        if (width > height) {
+          if (width > max_size) {
+            height *= max_size / width;
+            width = max_size;
+          }
+        } else {
+          if (height > max_size) {
+            width *= max_size / height;
+            height = max_size;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        
+        try {
+          localStorage.setItem('pos_img_' + productName, dataUrl);
+          setImageUpdates(prev => prev + 1);
+        } catch (err) {
+          alert('保存容量がいっぱいです。iPadの空き容量を確認してください。');
+        }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearImage = (productName) => {
+    localStorage.removeItem('pos_img_' + productName);
+    setImageUpdates(prev => prev + 1);
   };
 
   // CSV等のJSON形式用のパース関数
@@ -229,6 +287,49 @@ export default function Settings({ onSave, onBack }) {
             />
           </div>
         </div>
+
+        {localProducts.length > 0 && (
+          <div style={{marginBottom: '30px', textAlign: 'left', background: 'var(--bg)', padding: '16px', borderRadius: '8px'}}>
+            <h3 style={{marginBottom: '16px', fontSize: '1.1rem'}}>商品画像の設定（iPad内に保存）</h3>
+            <p style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px'}}>
+              ※設定した画像はiPadの中に保存されます。重くならないよう自動で圧縮されます。
+            </p>
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '16px'}}>
+              {localProducts.map(product => {
+                const imgData = localStorage.getItem('pos_img_' + product.name);
+                return (
+                  <div key={product.id} style={{border: '1px solid var(--border)', padding: '12px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px'}}>
+                    <div style={{width: '60px', height: '60px', backgroundColor: '#e2e8f0', borderRadius: '8px', overflow: 'hidden', flexShrink: 0}}>
+                      {imgData ? (
+                        <img src={imgData} alt="" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                      ) : product.image ? (
+                        <img src={product.image} alt="" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                      ) : (
+                        <div style={{width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#64748b'}}>No Img</div>
+                      )}
+                    </div>
+                    <div style={{flex: 1, minWidth: 0}}>
+                      <div style={{fontSize: '0.9rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px'}}>
+                        {product.name}
+                      </div>
+                      <div style={{display: 'flex', gap: '4px'}}>
+                        <label style={{fontSize: '0.8rem', padding: '4px 8px', backgroundColor: 'var(--primary)', color: 'white', borderRadius: '4px', cursor: 'pointer', display: 'inline-block'}}>
+                          選択
+                          <input type="file" accept="image/*" style={{display: 'none'}} onChange={(e) => handleImageUpload(product.name, e.target.files[0])} />
+                        </label>
+                        {imgData && (
+                          <button onClick={() => clearImage(product.name)} style={{fontSize: '0.8rem', padding: '4px 8px', backgroundColor: '#ef4444', color: 'white', borderRadius: '4px', border: 'none', cursor: 'pointer'}}>
+                            削除
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
         
         <label className="file-drop-area">
           <input 
