@@ -1,9 +1,13 @@
-export function printReceipt(cartItems, totalAmount, receivedAmount, change) {
+export function printReceipt(cartItems, totalAmount, receivedAmount, change, paymentMethod = '現金') {
   // iPadかPCかを判定 (簡易的)
   const isPC = !/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   
   const now = new Date();
   const dateStr = now.toLocaleString('ja-JP');
+  
+  const isReturn = totalAmount < 0;
+  const absTotal = Math.abs(totalAmount);
+  const titleText = isReturn ? '返品明細' : '領収書';
   
   let itemsHtml = '';
   cartItems.forEach(item => {
@@ -38,6 +42,7 @@ export function printReceipt(cartItems, totalAmount, receivedAmount, change) {
           <div class="header">
             <img src="https://yushinoka1122-afk.github.io/takeout-pos/logo.png" style="width: 100%; max-width: 200px; margin-bottom: 10px;" onerror="this.style.display='none'" />
             <div class="title" style="font-size: 20px;">BAKERY CAFE C<br>神戸さんちか店</div>
+            <div style="font-weight: bold; font-size: 18px; margin-top: 10px;">${titleText}</div>
             <div style="margin-top: 5px;">${dateStr}</div>
           </div>
           <table>
@@ -54,25 +59,34 @@ export function printReceipt(cartItems, totalAmount, receivedAmount, change) {
           </table>
           <div class="totals">
             <div class="row" style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">
-              <span>合計</span>
-              <span>¥${totalAmount.toLocaleString()}</span>
+              <span>${isReturn ? '返金合計' : '合計'}</span>
+              <span>¥${absTotal.toLocaleString()}</span>
             </div>
             <div class="row" style="font-size: 12px; color: #555;">
               <span>8%対象</span>
-              <span>¥${totalAmount.toLocaleString()}</span>
+              <span>¥${absTotal.toLocaleString()}</span>
             </div>
             <div class="row" style="font-size: 12px; color: #555; margin-bottom: 10px;">
               <span>内消費税等(8%)</span>
-              <span>¥${Math.round(totalAmount - (totalAmount / 1.08)).toLocaleString()}</span>
+              <span>¥${Math.round(absTotal - (absTotal / 1.08)).toLocaleString()}</span>
             </div>
-            <div class="row">
-              <span>お預かり</span>
-              <span>¥${receivedAmount.toLocaleString()}</span>
-            </div>
-            <div class="row">
-              <span>おつり</span>
-              <span>¥${change.toLocaleString()}</span>
-            </div>
+            
+            ${!isReturn ? `
+              <div class="row" style="margin-top: 10px; border-top: 1px solid #ddd; padding-top: 10px;">
+                <span>決済方法</span>
+                <span>${paymentMethod}</span>
+              </div>
+              ${paymentMethod === '現金' ? `
+              <div class="row">
+                <span>お預かり</span>
+                <span>¥${receivedAmount.toLocaleString()}</span>
+              </div>
+              <div class="row">
+                <span>おつり</span>
+                <span>¥${change.toLocaleString()}</span>
+              </div>
+              ` : ''}
+            ` : ''}
           </div>
           <div class="footer">
             登録番号：T1234567890123<br>

@@ -12,6 +12,7 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [isReturnMode, setIsReturnMode] = useState(false);
 
   useEffect(() => {
     // ローカルストレージから一時的に読み込む（オフライン時や高速表示のため）
@@ -42,19 +43,26 @@ function App() {
   }, []);
 
   const handleAddToCart = (product) => {
+    const qtyChange = isReturnMode ? -1 : 1;
+    
     setCartItems(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
+        const newQty = existing.quantity + qtyChange;
+        if (newQty === 0) {
+          return prev.filter(item => item.id !== product.id);
+        }
         return prev.map(item => 
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === product.id ? { ...item, quantity: newQty } : item
         );
       }
-      return [...prev, { ...product, quantity: 1 }];
+      return [...prev, { ...product, quantity: qtyChange }];
     });
   };
 
   const handleUpdateQuantity = (id, newQuantity) => {
-    if (newQuantity <= 0) {
+    // Return Mode does not restrict how we update quantity from the Cart component itself
+    if (newQuantity === 0) {
       setCartItems(prev => prev.filter(item => item.id !== id));
     } else {
       setCartItems(prev => prev.map(item => 
@@ -68,7 +76,7 @@ function App() {
     setIsCheckoutModalOpen(true);
   };
 
-  const handleCheckoutComplete = async ({ receivedAmount, change }) => {
+  const handleCheckoutComplete = async ({ receivedAmount, change, paymentMethod }) => {
     // モーダルを閉じずに通信中状態を維持するため、ここでは閉じない
     const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
@@ -80,7 +88,8 @@ function App() {
       itemsArray: cartItems.map(i => ({ name: i.name, quantity: i.quantity })), // マトリックス集計用
       totalAmount: totalAmount,
       receivedAmount: receivedAmount,
-      change: change
+      change: change,
+      paymentMethod: paymentMethod // 追加：決済方法
     };
 
     const success = await sendSalesDataToGAS(orderData);
@@ -90,7 +99,8 @@ function App() {
       return false; // モーダル側に失敗を伝える
     }
     
-    // モーダル側に成功を伝える（カートのクリアはモーダルが閉じられた時に行う）
+    // 成功時：返品モードをリセットする
+    if (isReturnMode) setIsReturnMode(false);
     return true;
   };
 
@@ -114,18 +124,27 @@ function App() {
   }
 
   return (
-    <div className="app-container">
+    <div className={`app-container ${isReturnMode ? 'return-mode' : ''}`}>
       <div className="main-area">
-        <header className="header">
-          <div className="header-title">Takeout POS</div>
-          <button 
-            className="btn btn-outline" 
-            onClick={() => setIsSettingsOpen(true)}
-            style={{padding: '8px 16px', fontSize: '1rem'}}
-          >
-            <SettingsIcon size={20} />
-            設定
-          </button>
+        <header className="header" style={{backgroundColor: isReturnMode ? 'var(--danger)' : 'var(--primary)'}}>
+          <div className="header-title">{isReturnMode ? 'Takeout POS (返品モード)' : 'Takeout POS'}</div>
+          <div style={{display: 'flex', gap: '10px'}}>
+            <button 
+              className={`btn ${isReturnMode ? 'btn-primary' : 'btn-outline'}`}
+              onClick={() => setIsReturnMode(!isReturnMode)}
+              style={{padding: '8px 16px', fontSize: '1rem', borderColor: '#fff', color: '#fff', backgroundColor: isReturnMode ? 'rgba(0,0,0,0.2)' : 'transparent'}}
+            >
+              {isReturnMode ? '返品モードON' : '返品モード'}
+            </button>
+            <button 
+              className="btn btn-outline" 
+              onClick={() => setIsSettingsOpen(true)}
+              style={{padding: '8px 16px', fontSize: '1rem', borderColor: '#fff', color: '#fff'}}
+            >
+              <SettingsIcon size={20} />
+              設定
+            </button>
+          </div>
         </header>
         
         {products.length === 0 ? (
