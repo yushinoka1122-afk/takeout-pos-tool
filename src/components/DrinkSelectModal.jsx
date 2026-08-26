@@ -5,7 +5,8 @@ const DRINKS = [
   { name: 'ホットティー', extraPrice: 0 },
   { name: 'アイスコーヒー', extraPrice: 0 },
   { name: 'アイスティー', extraPrice: 0 },
-  { name: 'カフェラテ', extraPrice: 110 }
+  { name: 'アイスカフェラテ', extraPrice: 110 },
+  { name: 'ホットカフェラテ', extraPrice: 110 }
 ];
 
 export default function DrinkSelectModal({ product, onSelect, onClose }) {

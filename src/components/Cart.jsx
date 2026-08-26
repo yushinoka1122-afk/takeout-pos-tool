@@ -1,7 +1,7 @@
 import { Trash2, Plus, Minus, CreditCard } from 'lucide-react';
 
-export default function Cart({ cartItems, onUpdateQuantity, onCheckout }) {
-  const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+export default function Cart({ cartItems, onUpdateQuantity, onCheckout, isReturnMode }) {
+  const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0) * (isReturnMode ? -1 : 1);
 
   return (
     <div className="cart-sidebar">
@@ -42,7 +42,7 @@ export default function Cart({ cartItems, onUpdateQuantity, onCheckout }) {
       </div>
       
       <div className="cart-footer">
-        <div className="cart-total">
+        <div className="cart-total" style={{color: isReturnMode ? 'var(--danger)' : 'inherit'}}>
           <span>合計</span>
           <span>¥{totalAmount.toLocaleString()}</span>
         </div>
@@ -50,9 +50,10 @@ export default function Cart({ cartItems, onUpdateQuantity, onCheckout }) {
           className="btn btn-primary checkout-btn" 
           disabled={cartItems.length === 0}
           onClick={onCheckout}
+          style={{backgroundColor: isReturnMode ? 'var(--danger)' : 'var(--primary)'}}
         >
           <CreditCard size={28} />
-          お会計へ進む
+          {isReturnMode ? '返品会計へ進む' : 'お会計へ進む'}
         </button>
       </div>
     </div>

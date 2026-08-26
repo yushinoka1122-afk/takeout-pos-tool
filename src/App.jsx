@@ -195,6 +195,7 @@ function App() {
         cartItems={cartItems} 
         onUpdateQuantity={handleUpdateQuantity} 
         onCheckout={handleCheckoutClick} 
+        isReturnMode={isReturnMode}
       />
       
       {isCheckoutModalOpen && (

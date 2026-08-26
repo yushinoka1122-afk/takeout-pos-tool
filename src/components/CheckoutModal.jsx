@@ -4,12 +4,9 @@ import { printReceipt } from '../utils/print';
 
 const PAYMENT_METHODS = [
   '現金',
-  'クレジットカード',
-  'QRコード決済',
-  '交通系IC',
-  'iD',
-  'QUICPay',
-  'PiTaPa'
+  'クレジット',
+  'QR',
+  '電子マネー'
 ];
 
 export default function CheckoutModal({ cartItems, totalAmount, onClose, onComplete }) {
@@ -86,10 +83,10 @@ export default function CheckoutModal({ cartItems, totalAmount, onClose, onCompl
     return (
       <div className="modal-overlay">
         <div className="checkout-modal success-modal" style={{textAlign: 'center', maxWidth: '400px'}}>
-          <div style={{color: 'var(--success)', marginBottom: '20px'}}>
+          <div style={{color: isReturn ? 'var(--danger)' : 'var(--success)', marginBottom: '20px'}}>
             <CheckCircle2 size={64} style={{margin: '0 auto'}} />
           </div>
-          <h2 style={{fontSize: '1.8rem', marginBottom: '10px'}}>
+          <h2 style={{fontSize: '1.8rem', marginBottom: '10px', color: isReturn ? 'var(--danger)' : 'inherit'}}>
             {isReturn ? '返品完了！' : '会計完了！'}
           </h2>
           
@@ -122,7 +119,7 @@ export default function CheckoutModal({ cartItems, totalAmount, onClose, onCompl
     <div className="modal-overlay">
       <div className="checkout-modal" style={{maxWidth: '800px', width: '95%'}}>
         <button className="modal-close" onClick={() => onClose(false)} disabled={step === 'processing'}><X size={28} /></button>
-        <h2 className="modal-title">{isReturn ? '返品確認' : 'お会計'}</h2>
+        <h2 className="modal-title" style={{color: isReturn ? 'var(--danger)' : 'inherit'}}>{isReturn ? '返品確認' : 'お会計'}</h2>
         
         <div className="checkout-content">
           {/* 左側：決済方法と金額エリア */}
@@ -155,8 +152,8 @@ export default function CheckoutModal({ cartItems, totalAmount, onClose, onCompl
             )}
             
             <div className="amount-row">
-              <span className="amount-label">{isReturn ? '返金合計' : '合計金額'}</span>
-              <span className="amount-value total">¥{Math.abs(totalAmount).toLocaleString()}</span>
+              <span className="amount-label" style={{color: isReturn ? 'var(--danger)' : 'inherit'}}>{isReturn ? '返金合計' : '合計金額'}</span>
+              <span className="amount-value total" style={{color: isReturn ? 'var(--danger)' : 'var(--primary)'}}>¥{Math.abs(totalAmount).toLocaleString()}</span>
             </div>
             
             {!isReturn && paymentMethod === '現金' && (
