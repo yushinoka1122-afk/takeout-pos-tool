@@ -80,7 +80,7 @@ export function printReceipt(cartItems, totalAmount, receivedAmount, change, pay
             ベーカリーカフェC さんちか店<br>
             神戸市中央区三宮町１−１０−１<br>
             さんちか10番街グルメスクエア<br>
-            TEL:
+            TEL: 078-954-8309
           </div>
           
           ${isReturn ? '<div style="text-align:center; font-size: 16px; margin-bottom:10px;">＜ 返品明細 ＞</div>' : ''}
