@@ -186,7 +186,7 @@ export function printReceipt(cartItems, totalAmount, receivedAmount, change, pay
     // iPadの場合はPassPRNTを呼び出す
     const currentUrl = window.location.href.split('?')[0]; // クエリパラメータを除外
     // URLのエンコード処理（PassPRNTの仕様に合わせる）
-    const passPrntUrl = `starpassprnt://v1/print/nopdf?html=${encodeURIComponent(html)}&size=2&back=${encodeURIComponent(currentUrl)}`;
+    const passPrntUrl = `starpassprnt://v1/print/nopreview?html=${encodeURIComponent(html)}&size=2&back=${encodeURIComponent(currentUrl)}`;
     
     // PassPRNTアプリを開く
     window.location.href = passPrntUrl;
