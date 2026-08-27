@@ -1,6 +1,7 @@
 export function printReceipt(cartItems, totalAmount, receivedAmount, change, paymentMethod = '現金') {
-  // iPadかPCかを判定 (簡易的)
-  const isPC = !/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  // iPadかPCかを判定 (iOS 13以降のiPadはMacintoshとして判定されるため、タッチポイントで判定)
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isPC = !isIOS;
   
   const now = new Date();
   const days = ['日', '月', '火', '水', '木', '金', '土'];
@@ -184,8 +185,10 @@ export function printReceipt(cartItems, totalAmount, receivedAmount, change, pay
   } else {
     // iPadの場合はPassPRNTを呼び出す
     const currentUrl = window.location.href.split('?')[0]; // クエリパラメータを除外
-    // size=384 (2inch/58mm), size=576 (3inch/80mm) ※最新のAPI仕様に合わせてドット数で指定
-    const passPrntUrl = `starpassprnt://v1/print/nopreview?html=${encodeURIComponent(html)}&size=384&back=${encodeURIComponent(currentUrl)}`;
+    // URLのエンコード処理（PassPRNTの仕様に合わせる）
+    const passPrntUrl = `starpassprnt://v1/print/nopdf?html=${encodeURIComponent(html)}&size=2&back=${encodeURIComponent(currentUrl)}`;
+    
+    // PassPRNTアプリを開く
     window.location.href = passPrntUrl;
   }
 }
