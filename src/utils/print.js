@@ -43,29 +43,30 @@ export function printReceipt(cartItems, totalAmount, receivedAmount, change, pay
     <html>
       <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=384, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <style>
-          body { font-family: monospace, sans-serif; width: 100%; margin: 0; padding: 0; font-size: 14px; color: #000; line-height: 1.4; }
-          .receipt { width: 100%; max-width: 300px; margin: 0 auto; padding: 20px 10px; }
+          body { font-family: monospace, sans-serif; width: 384px; margin: 0; padding: 0; font-size: 22px; color: #000; line-height: 1.4; }
+          .receipt { width: 100%; box-sizing: border-box; padding: 10px; margin: 0 auto; }
           .header { text-align: center; margin-bottom: 15px; }
-          .title { font-size: 18px; margin-bottom: 5px; letter-spacing: 2px; }
-          .store-info { font-size: 12px; text-align: center; line-height: 1.3; margin-bottom: 15px; }
-          .date-line { font-size: 13px; margin-bottom: 10px; }
+          .title { font-size: 30px; margin-bottom: 5px; letter-spacing: 2px; font-weight: bold; }
+          .store-info { font-size: 18px; text-align: center; line-height: 1.3; margin-bottom: 15px; }
+          .date-line { font-size: 20px; margin-bottom: 10px; }
           
-          .row { display: flex; justify-content: space-between; margin-bottom: 2px; }
+          .row { display: flex; justify-content: space-between; margin-bottom: 4px; }
           .items-list { margin-bottom: 15px; }
-          .item-name { margin-bottom: 0px; }
-          .item-details { color: #000; font-size: 13px; }
+          .item-name { margin-bottom: 0px; font-size: 22px; }
+          .item-details { color: #000; font-size: 20px; }
           
-          .totals-section { margin-bottom: 15px; font-size: 13px; }
-          .total-row { font-size: 18px; letter-spacing: 2px; margin: 8px 0; }
-          .tax-details { font-size: 12px; display: flex; justify-content: space-between; }
+          .totals-section { margin-bottom: 15px; font-size: 20px; }
+          .total-row { font-size: 28px; letter-spacing: 2px; margin: 10px 0; font-weight: bold; }
+          .tax-details { font-size: 18px; display: flex; justify-content: space-between; }
           .tax-details span { display: inline-block; }
           
-          .payment-section { margin-top: 15px; margin-bottom: 20px; font-size: 14px; }
-          .footer-info { font-size: 12px; }
+          .payment-section { margin-top: 15px; margin-bottom: 20px; font-size: 22px; }
+          .footer-info { font-size: 18px; }
           
           /* Utility */
-          .w-50 { width: 50px; text-align: right; display: inline-block; }
+          .w-50 { width: 80px; text-align: right; display: inline-block; }
         </style>
       </head>
       <body>
